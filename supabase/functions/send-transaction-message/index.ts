@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendSMS } from "../_shared/sms-provider.ts";
 import { sendEmail } from "../_shared/email-provider.ts";

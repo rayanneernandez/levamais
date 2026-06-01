@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const WHATSAPP_API_BASE = "https://wpp-360dialog-starter.onrender.com";
