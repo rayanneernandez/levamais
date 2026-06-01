@@ -1,0 +1,20 @@
+-- Adicionar campos de contatos e endereço na tabela networks
+ALTER TABLE public.networks 
+ADD COLUMN cnpj TEXT,
+ADD COLUMN phone TEXT,
+ADD COLUMN commercial_contact_name TEXT,
+ADD COLUMN commercial_contact_phone TEXT,
+ADD COLUMN commercial_contact_email TEXT,
+ADD COLUMN technical_contact_name TEXT,
+ADD COLUMN technical_contact_phone TEXT,
+ADD COLUMN technical_contact_email TEXT,
+ADD COLUMN financial_contact_name TEXT,
+ADD COLUMN financial_contact_phone TEXT,
+ADD COLUMN financial_contact_email TEXT,
+ADD COLUMN address_street TEXT,
+ADD COLUMN address_number TEXT,
+ADD COLUMN address_complement TEXT,
+ADD COLUMN address_neighborhood TEXT,
+ADD COLUMN address_city TEXT,
+ADD COLUMN address_state TEXT,
+ADD COLUMN address_zip TEXT;

@@ -1,0 +1,1109 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Leva+ Portal do Cliente - API",
+    "description": "API completa para replicar o Portal do Cliente Leva+ em aplicativos nativos. Inclui autenticação, perfil, transações, notificações, Leva+ One, retenção, indicação e suporte.",
+    "version": "2.0.0",
+    "contact": {
+      "name": "Suporte Leva+",
+      "email": "comercial@levamais.app"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://auivszkscfcpczrkecoc.supabase.co",
+      "description": "Servidor de Produção"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": [],
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/functions/v1/send-client-login-code": {
+      "post": {
+        "summary": "Solicitar Código de Login",
+        "description": "Envia um código de verificação por email para o cliente. Primeira etapa do login OTP.",
+        "tags": ["1. Autenticação"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cpf", "email"],
+                "properties": {
+                  "cpf": {
+                    "type": "string",
+                    "description": "CPF do cliente (apenas números)",
+                    "example": "12345678900"
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "Email cadastrado do cliente",
+                    "example": "cliente@email.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Código enviado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Código enviado para o email" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/functions/v1/verify-client-login-code": {
+      "post": {
+        "summary": "Verificar Código e Obter Sessão",
+        "description": "Verifica o código OTP e retorna token JWT + dados do cliente. Segunda etapa do login.",
+        "tags": ["1. Autenticação"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cpf", "email", "code"],
+                "properties": {
+                  "cpf": { "type": "string", "example": "12345678900" },
+                  "email": { "type": "string", "example": "cliente@email.com" },
+                  "code": { "type": "string", "description": "Código de 6 dígitos recebido por email", "example": "123456" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login realizado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "client": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "cpf": { "type": "string", "example": "12345678900" },
+                        "full_name": { "type": "string", "example": "Nome do Cliente" },
+                        "email": { "type": "string", "example": "cliente@email.com" },
+                        "phone": { "type": "string", "example": "11999999999" },
+                        "birth_date": { "type": "string", "example": "1990-01-15" },
+                        "is_one_member": { "type": "boolean", "example": false },
+                        "favorite_network_id": { "type": "string", "format": "uuid" }
+                      }
+                    },
+                    "session_token": { "type": "string", "description": "JWT para usar nas próximas requisições" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/functions/v1/client-first-registration": {
+      "post": {
+        "summary": "Primeiro Cadastro",
+        "description": "Registra um novo cliente na plataforma.",
+        "tags": ["1. Autenticação"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cpf", "email", "full_name", "phone", "password", "network_id"],
+                "properties": {
+                  "cpf": { "type": "string", "example": "12345678900" },
+                  "email": { "type": "string", "example": "cliente@email.com" },
+                  "full_name": { "type": "string", "example": "Nome Completo" },
+                  "phone": { "type": "string", "example": "11999999999" },
+                  "birth_date": { "type": "string", "example": "1990-01-15" },
+                  "password": { "type": "string", "example": "senha123" },
+                  "network_id": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cadastro realizado com sucesso"
+          }
+        }
+      }
+    },
+    "/functions/v1/client-forgot-password": {
+      "post": {
+        "summary": "Recuperar Senha",
+        "description": "Envia link de recuperação de senha por email.",
+        "tags": ["1. Autenticação"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cpf", "email"],
+                "properties": {
+                  "cpf": { "type": "string", "example": "12345678900" },
+                  "email": { "type": "string", "example": "cliente@email.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Email de recuperação enviado" }
+        }
+      }
+    },
+    "/rest/v1/clients": {
+      "get": {
+        "summary": "Buscar Perfil do Cliente",
+        "description": "Retorna dados completos do perfil do cliente. Use filtro `?cpf=eq.{cpf}` ou `?id=eq.{id}`.",
+        "tags": ["2. Dados do Cliente"],
+        "parameters": [
+          { "name": "cpf", "in": "query", "schema": { "type": "string" }, "description": "Filtro por CPF: eq.12345678900" },
+          { "name": "id", "in": "query", "schema": { "type": "string" }, "description": "Filtro por ID: eq.{uuid}" },
+          { "name": "select", "in": "query", "schema": { "type": "string" }, "description": "Campos a retornar", "example": "id,full_name,email,phone,total_points,is_one_member" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do cliente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Client"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Atualizar Perfil do Cliente",
+        "description": "Atualiza dados do perfil. Filtrar com `?id=eq.{client_id}`. Também usado para: definir rede favorita, ativar/desativar resgate automático, marcar tutorial.",
+        "tags": ["2. Dados do Cliente"],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "full_name": { "type": "string", "example": "Novo Nome" },
+                  "phone": { "type": "string", "example": "11988888888" },
+                  "address_street": { "type": "string" },
+                  "address_number": { "type": "string" },
+                  "address_complement": { "type": "string" },
+                  "address_neighborhood": { "type": "string" },
+                  "address_city": { "type": "string" },
+                  "address_state": { "type": "string" },
+                  "address_zip": { "type": "string" },
+                  "favorite_network_id": { "type": "string", "format": "uuid", "description": "Define rede favorita" },
+                  "auto_redemption_enabled": { "type": "boolean", "description": "Ativa/desativa resgate automático (sem PIN)" },
+                  "auto_redemption_disable_mode": { "type": "string", "enum": ["immediate", "scheduled"], "description": "Modo de desligamento: 'immediate' = desliga após cada resgate, 'scheduled' = desliga após período" },
+                  "auto_redemption_disable_scheduled_at": { "type": "string", "format": "date-time", "description": "Data/hora para desligar automaticamente (usado quando disable_mode='scheduled')" },
+                  "tutorial_completed": { "type": "boolean", "description": "Marca tutorial como concluído" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Atualizado com sucesso" }
+        }
+      }
+    },
+    "/rest/v1/loyalty_balances": {
+      "get": {
+        "summary": "Buscar Saldos (Pontos/Cashback)",
+        "description": "Retorna saldos de fidelidade do cliente em todas as redes.",
+        "tags": ["2. Dados do Cliente"],
+        "parameters": [
+          { "name": "client_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" },
+          { "name": "select", "in": "query", "schema": { "type": "string" }, "example": "*,networks(name,logo_url,loyalty_type)" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de saldos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string", "format": "uuid" },
+                      "client_id": { "type": "string", "format": "uuid" },
+                      "network_id": { "type": "string", "format": "uuid" },
+                      "balance": { "type": "number", "example": 150.50 },
+                      "loyalty_type": { "type": "string", "enum": ["cashback", "points"] },
+                      "networks": {
+                        "type": "object",
+                        "properties": {
+                          "name": { "type": "string", "example": "Posto ABC" },
+                          "logo_url": { "type": "string" },
+                          "loyalty_type": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/v1/networks": {
+      "get": {
+        "summary": "Buscar Redes Disponíveis",
+        "description": "Lista redes ativas. Filtrar com `?is_active=eq.true`. Inclui configurações de fidelidade, One, retenção e resgate.",
+        "tags": ["3. Redes e Lojas"],
+        "parameters": [
+          { "name": "is_active", "in": "query", "schema": { "type": "string" }, "example": "eq.true" },
+          { "name": "id", "in": "query", "schema": { "type": "string" }, "description": "eq.{network_id} para buscar rede específica" },
+          { "name": "select", "in": "query", "schema": { "type": "string" }, "example": "id,name,logo_url,loyalty_type,primary_color,one_enabled,retention_enabled,retention_multiplier_6m,retention_multiplier_9m,retention_multiplier_12m,max_redemption_sale_percentage,referral_enabled,referral_bonus_type,referral_bonus_value,referral_bonus_referred_value" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de redes com configurações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string", "format": "uuid" },
+                      "name": { "type": "string", "example": "Posto ABC" },
+                      "logo_url": { "type": "string" },
+                      "loyalty_type": { "type": "string", "enum": ["cashback", "points"] },
+                      "primary_color": { "type": "string", "example": "#FF6600" },
+                      "one_enabled": { "type": "boolean", "description": "Se true, mostrar propaganda/funcionalidades do Leva+ One. Se false, ocultar tudo do One." },
+                      "retention_enabled": { "type": "boolean", "description": "Se true, mostrar Programa de Benefícios (retenção) no portal." },
+                      "retention_multiplier_6m": { "type": "number", "example": 1.1, "description": "Multiplicador bônus para compromisso de 6 meses (ex: 1.1 = +10%)" },
+                      "retention_multiplier_9m": { "type": "number", "example": 1.15, "description": "Multiplicador bônus para compromisso de 9 meses (ex: 1.15 = +15%)" },
+                      "retention_multiplier_12m": { "type": "number", "example": 1.2, "description": "Multiplicador bônus para compromisso de 12 meses (ex: 1.2 = +20%)" },
+                      "max_redemption_sale_percentage": { "type": "integer", "description": "Percentual máximo de uma venda que pode ser pago com fidelidade (1-100). Null = 100%." }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/v1/stores": {
+      "get": {
+        "summary": "Buscar Lojas de uma Rede",
+        "description": "Lista lojas ativas de uma rede. Inclui coordenadas para mapa.",
+        "tags": ["3. Redes e Lojas"],
+        "parameters": [
+          { "name": "network_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{network_id}" },
+          { "name": "is_active", "in": "query", "schema": { "type": "string" }, "example": "eq.true" },
+          { "name": "select", "in": "query", "schema": { "type": "string" }, "example": "id,name,address,city,state,phone,latitude,longitude,opening_hours,flag,services", "description": "Incluir flag e services para mostrar bandeira e serviços disponíveis" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de lojas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Store"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/v1/transactions": {
+      "get": {
+        "summary": "Buscar Histórico de Transações",
+        "description": "Retorna extrato de transações do cliente. Tipos: accumulation, redemption, adjustment, expiration, bonus. Suporta paginação com limit/offset e filtro por período.",
+        "tags": ["4. Transações e Extrato"],
+        "parameters": [
+          { "name": "client_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" },
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "description": "eq.completed" },
+          { "name": "created_at", "in": "query", "schema": { "type": "string" }, "description": "gte.2024-01-01 ou lte.2024-12-31" },
+          { "name": "order", "in": "query", "schema": { "type": "string" }, "example": "created_at.desc" },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" }, "example": 50 },
+          { "name": "offset", "in": "query", "schema": { "type": "integer" }, "example": 0 },
+          { "name": "select", "in": "query", "schema": { "type": "string" }, "example": "*,stores(name)" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de transações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Enviar Avaliação NPS",
+        "description": "Atualiza uma transação com a avaliação NPS do cliente. Filtrar com `?id=eq.{transaction_id}`.",
+        "tags": ["5. NPS (Avaliação)"],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{transaction_id}" }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nps_rating": { "type": "integer", "minimum": 0, "maximum": 10, "example": 9 },
+                  "nps_comment": { "type": "string", "example": "Ótimo atendimento!" },
+                  "nps_rated_at": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Avaliação registrada" }
+        }
+      }
+    },
+    "/functions/v1/apply-nps-rating-reward": {
+      "post": {
+        "summary": "Aplicar Recompensa por Avaliação",
+        "description": "Aplica bônus ao cliente após avaliação NPS (se configurado pela rede).",
+        "tags": ["5. NPS (Avaliação)"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["transaction_id", "rating"],
+                "properties": {
+                  "transaction_id": { "type": "string", "format": "uuid" },
+                  "rating": { "type": "integer", "example": 9 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Recompensa aplicada" }
+        }
+      }
+    },
+    "/rest/v1/client_notification_recipients": {
+      "get": {
+        "summary": "Buscar Notificações do Cliente",
+        "description": "Retorna notificações enviadas ao cliente com título e mensagem.",
+        "tags": ["6. Notificações"],
+        "parameters": [
+          { "name": "client_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" },
+          { "name": "select", "in": "query", "schema": { "type": "string" }, "example": "*,client_notifications(title,message,created_at)" },
+          { "name": "order", "in": "query", "schema": { "type": "string" }, "example": "created_at.desc" }
+        ],
+        "responses": {
+          "200": { "description": "Lista de notificações" }
+        }
+      },
+      "patch": {
+        "summary": "Marcar Notificação como Lida",
+        "description": "Marca uma notificação como lida. Filtrar com `?id=eq.{recipient_id}`.",
+        "tags": ["6. Notificações"],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{recipient_id}" }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "is_read": { "type": "boolean", "example": true },
+                  "read_at": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Marcada como lida" }
+        }
+      }
+    },
+    "/rest/v1/push_subscriptions": {
+      "post": {
+        "summary": "Registrar Push Token",
+        "description": "Registra o dispositivo para receber notificações push.",
+        "tags": ["6. Notificações"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "network_id", "endpoint", "p256dh", "auth"],
+                "properties": {
+                  "client_id": { "type": "string", "format": "uuid" },
+                  "network_id": { "type": "string", "format": "uuid" },
+                  "endpoint": { "type": "string", "example": "https://fcm.googleapis.com/..." },
+                  "p256dh": { "type": "string" },
+                  "auth": { "type": "string" },
+                  "device_info": {
+                    "type": "object",
+                    "properties": {
+                      "platform": { "type": "string", "example": "android" },
+                      "model": { "type": "string", "example": "Pixel 7" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Token registrado" }
+        }
+      }
+    },
+    "/rest/v1/leva_one_config": {
+      "get": {
+        "summary": "Configuração do Leva+ One na Rede",
+        "description": "Verifica se a rede tem Leva+ One ativo e retorna configurações.",
+        "tags": ["7. Leva+ One"],
+        "parameters": [
+          { "name": "network_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{network_id}" },
+          { "name": "is_active", "in": "query", "schema": { "type": "string" }, "example": "eq.true" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configuração do Leva+ One",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "network_id": { "type": "string", "format": "uuid" },
+                    "is_active": { "type": "boolean" },
+                    "monthly_value": { "type": "number", "example": 29.90 },
+                    "minimum_period_months": { "type": "integer", "example": 3 },
+                    "cashback_multiplier": { "type": "number", "example": 2.0 },
+                    "points_multiplier": { "type": "number", "example": 2.0 },
+                    "additional_benefits": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/v1/client_subscriptions_one": {
+      "get": {
+        "summary": "Status de Assinatura do Cliente",
+        "description": "Verifica se o cliente tem assinatura ativa do Leva+ One.",
+        "tags": ["7. Leva+ One"],
+        "parameters": [
+          { "name": "client_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" },
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "example": "eq.active" }
+        ],
+        "responses": {
+          "200": { "description": "Dados da assinatura" }
+        }
+      }
+    },
+    "/functions/v1/create-one-credit-card-subscription": {
+      "post": {
+        "summary": "Criar Assinatura com Cartão",
+        "description": "Cria uma assinatura Leva+ One com pagamento via cartão de crédito.",
+        "tags": ["7. Leva+ One"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "network_id", "card", "holder_info"],
+                "properties": {
+                  "client_id": { "type": "string", "format": "uuid" },
+                  "network_id": { "type": "string", "format": "uuid" },
+                  "card": {
+                    "type": "object",
+                    "properties": {
+                      "holder_name": { "type": "string", "example": "NOME NO CARTAO" },
+                      "number": { "type": "string", "example": "4111111111111111" },
+                      "expiry_month": { "type": "string", "example": "12" },
+                      "expiry_year": { "type": "string", "example": "2025" },
+                      "cvv": { "type": "string", "example": "123" }
+                    }
+                  },
+                  "holder_info": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "email": { "type": "string" },
+                      "cpf": { "type": "string" },
+                      "phone": { "type": "string" },
+                      "postal_code": { "type": "string" },
+                      "address_number": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Assinatura criada" }
+        }
+      }
+    },
+    "/functions/v1/update-one-subscription-card": {
+      "post": {
+        "summary": "Atualizar Cartão da Assinatura",
+        "description": "Atualiza o cartão de crédito de uma assinatura ativa.",
+        "tags": ["7. Leva+ One"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["subscription_id", "card"],
+                "properties": {
+                  "subscription_id": { "type": "string", "format": "uuid" },
+                  "card": {
+                    "type": "object",
+                    "properties": {
+                      "holder_name": { "type": "string" },
+                      "number": { "type": "string" },
+                      "expiry_month": { "type": "string" },
+                      "expiry_year": { "type": "string" },
+                      "cvv": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Cartão atualizado" }
+        }
+      }
+    },
+    "/functions/v1/cancel-one-subscription": {
+      "post": {
+        "summary": "Cancelar Assinatura",
+        "description": "Cancela a assinatura Leva+ One do cliente.",
+        "tags": ["7. Leva+ One"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["subscription_id"],
+                "properties": {
+                  "subscription_id": { "type": "string", "format": "uuid" },
+                  "reason": { "type": "string", "example": "Motivo do cancelamento" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Assinatura cancelada" }
+        }
+      }
+    },
+    "/rest/v1/one_promotions": {
+      "get": {
+        "summary": "Buscar Promoções Leva+ One",
+        "description": "Lista promoções ativas exclusivas para membros One.",
+        "tags": ["7. Leva+ One"],
+        "parameters": [
+          { "name": "network_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{network_id}" },
+          { "name": "is_active", "in": "query", "schema": { "type": "string" }, "example": "eq.true" }
+        ],
+        "responses": {
+          "200": { "description": "Lista de promoções" }
+        }
+      }
+    },
+    "/rest/v1/retention_program_config": {
+      "get": {
+        "summary": "Configuração do Programa de Retenção (via tabela networks)",
+        "description": "As configurações de retenção estão na tabela `networks`. Use GET /rest/v1/networks?id=eq.{network_id}&select=retention_enabled,retention_multiplier_6m,retention_multiplier_9m,retention_multiplier_12m para obter os dados. Este endpoint é alternativo se existir tabela dedicada.",
+        "tags": ["8. Programa de Retenção"],
+        "parameters": [
+          { "name": "network_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{network_id}" },
+          { "name": "is_active", "in": "query", "schema": { "type": "string" }, "example": "eq.true" }
+        ],
+        "responses": {
+          "200": { "description": "Configuração do programa" }
+        }
+      }
+    },
+    "/rest/v1/client_retention_commitments": {
+      "get": {
+        "summary": "Buscar Compromisso Ativo",
+        "description": "Verifica se o cliente tem compromisso de retenção ativo.",
+        "tags": ["8. Programa de Retenção"],
+        "parameters": [
+          { "name": "client_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" },
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "example": "eq.active" }
+        ],
+        "responses": {
+          "200": { "description": "Compromisso do cliente" }
+        }
+      }
+    },
+    "/functions/v1/create-retention-commitment": {
+      "post": {
+        "summary": "Criar Compromisso de Retenção",
+        "description": "Cria um compromisso de retenção para o cliente, com multiplicador de pontos/cashback.",
+        "tags": ["8. Programa de Retenção"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "network_id", "commitment_months", "multiplier"],
+                "properties": {
+                  "client_id": { "type": "string", "format": "uuid" },
+                  "network_id": { "type": "string", "format": "uuid" },
+                  "commitment_months": { "type": "integer", "example": 6 },
+                  "multiplier": { "type": "number", "example": 2.0 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Compromisso criado" }
+        }
+      }
+    },
+    "/rest/v1/referral_program_config": {
+      "get": {
+        "summary": "Configuração do Programa de Indicação",
+        "description": "Retorna configuração do programa de indicação de uma rede.",
+        "tags": ["9. Programa de Indicação"],
+        "parameters": [
+          { "name": "network_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{network_id}" },
+          { "name": "is_active", "in": "query", "schema": { "type": "string" }, "example": "eq.true" }
+        ],
+        "responses": {
+          "200": { "description": "Configuração do programa" }
+        }
+      }
+    },
+    "/rest/v1/client_referrals": {
+      "get": {
+        "summary": "Buscar Indicações Realizadas",
+        "description": "Lista clientes indicados pelo cliente.",
+        "tags": ["9. Programa de Indicação"],
+        "parameters": [
+          { "name": "referrer_client_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" },
+          { "name": "select", "in": "query", "schema": { "type": "string" }, "example": "*,clients!referred_client_id(full_name,created_at)" }
+        ],
+        "responses": {
+          "200": { "description": "Lista de indicações" }
+        }
+      }
+    },
+    "/rest/v1/support_tickets": {
+      "post": {
+        "summary": "Criar Ticket de Suporte",
+        "description": "Abre um ticket de suporte para o cliente.",
+        "tags": ["10. Suporte"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["network_id", "client_id", "subject", "description"],
+                "properties": {
+                  "network_id": { "type": "string", "format": "uuid" },
+                  "client_id": { "type": "string", "format": "uuid" },
+                  "subject": { "type": "string", "example": "Problema com pontos" },
+                  "description": { "type": "string", "example": "Descrição detalhada do problema" },
+                  "category": { "type": "string", "example": "pontos" },
+                  "priority": { "type": "string", "enum": ["low", "medium", "high"], "example": "medium" },
+                  "status": { "type": "string", "example": "open" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Ticket criado" }
+        }
+      },
+      "get": {
+        "summary": "Buscar Tickets do Cliente",
+        "description": "Lista tickets de suporte abertos pelo cliente.",
+        "tags": ["10. Suporte"],
+        "parameters": [
+          { "name": "client_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{client_id}" },
+          { "name": "order", "in": "query", "schema": { "type": "string" }, "example": "created_at.desc" }
+        ],
+        "responses": {
+          "200": { "description": "Lista de tickets" }
+        }
+      }
+    },
+    "/rest/v1/support_ticket_messages": {
+      "post": {
+        "summary": "Adicionar Mensagem ao Ticket",
+        "description": "Envia uma mensagem em um ticket de suporte existente.",
+        "tags": ["10. Suporte"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["ticket_id", "sender_type", "sender_id", "message"],
+                "properties": {
+                  "ticket_id": { "type": "string", "format": "uuid" },
+                  "sender_type": { "type": "string", "example": "client" },
+                  "sender_id": { "type": "string", "format": "uuid" },
+                  "message": { "type": "string", "example": "Mensagem do cliente" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Mensagem enviada" }
+        }
+      },
+      "get": {
+        "summary": "Buscar Mensagens do Ticket",
+        "description": "Lista mensagens de um ticket de suporte.",
+        "tags": ["10. Suporte"],
+        "parameters": [
+          { "name": "ticket_id", "in": "query", "required": true, "schema": { "type": "string" }, "description": "eq.{ticket_id}" },
+          { "name": "order", "in": "query", "schema": { "type": "string" }, "example": "created_at.asc" }
+        ],
+        "responses": {
+          "200": { "description": "Lista de mensagens" }
+        }
+      }
+    },
+    "/functions/v1/buscar-cep": {
+      "post": {
+        "summary": "Buscar CEP",
+        "description": "Retorna endereço a partir de um CEP.",
+        "tags": ["11. Utilitários"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cep"],
+                "properties": {
+                  "cep": { "type": "string", "example": "01310100" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Endereço encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cep": { "type": "string", "example": "01310-100" },
+                    "logradouro": { "type": "string", "example": "Avenida Paulista" },
+                    "bairro": { "type": "string", "example": "Bela Vista" },
+                    "localidade": { "type": "string", "example": "São Paulo" },
+                    "uf": { "type": "string", "example": "SP" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/functions/v1/client-portal-config": {
+      "post": {
+        "summary": "Config Completa do Portal (Endpoint Agregado)",
+        "description": "Retorna TODOS os dados necessários para o app em uma única chamada: perfil do cliente, config da rede (One, retenção, resgate), saldos, notificações e compromisso ativo. Ideal para carregar a home do app.",
+        "tags": ["12. Endpoint Agregado"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id"],
+                "properties": {
+                  "client_id": { "type": "string", "format": "uuid", "description": "ID do cliente logado" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dados completos do portal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "client": { "$ref": "#/components/schemas/Client" },
+                    "favorite_network_config": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Configurações da rede favorita do cliente",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "name": { "type": "string" },
+                        "logo_url": { "type": "string" },
+                        "loyalty_type": { "type": "string", "enum": ["cashback", "points"] },
+                        "one_enabled": { "type": "boolean", "description": "Se false, NÃO mostrar propaganda/cards do Leva+ One" },
+                        "retention_enabled": { "type": "boolean", "description": "Se true, mostrar Programa de Benefícios" },
+                        "retention_multiplier_6m": { "type": "number" },
+                        "retention_multiplier_9m": { "type": "number" },
+                        "retention_multiplier_12m": { "type": "number" },
+                        "max_redemption_sale_percentage": { "type": "integer" },
+                        "referral_enabled": { "type": "boolean" },
+                        "referral_bonus_type": { "type": "string" },
+                        "referral_bonus_value": { "type": "number" },
+                        "referral_bonus_referred_value": { "type": "number" }
+                      }
+                    },
+                    "retention_commitment": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Compromisso de retenção ativo (ou null)",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "commitment_months": { "type": "integer" },
+                        "multiplier_applied": { "type": "number" },
+                        "status": { "type": "string" },
+                        "expires_at": { "type": "string", "format": "date-time" }
+                      }
+                    },
+                    "networks": {
+                      "type": "array",
+                      "description": "Todas as redes do cliente com saldos e lojas. A rede favorita vem primeiro (is_favorite=true).",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "network_id": { "type": "string", "format": "uuid" },
+                          "balance": { "type": "number", "description": "Saldo de fidelidade nesta rede" },
+                          "is_favorite": { "type": "boolean", "description": "true se for a rede principal do cliente" },
+                          "network": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string" },
+                              "name": { "type": "string" },
+                              "logo_url": { "type": "string" },
+                              "loyalty_type": { "type": "string" },
+                              "primary_color": { "type": "string" },
+                              "one_enabled": { "type": "boolean" },
+                              "retention_enabled": { "type": "boolean" },
+                              "max_redemption_sale_percentage": { "type": "integer" }
+                            }
+                          },
+                          "stores": {
+                            "type": "array",
+                            "description": "Lojas ativas desta rede com bandeira e serviços",
+                            "items": { "$ref": "#/components/schemas/Store" }
+                          }
+                        }
+                      }
+                    },
+                    "notifications": {
+                      "type": "object",
+                      "properties": {
+                        "unread_count": { "type": "integer" },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string" },
+                              "is_read": { "type": "boolean" },
+                              "client_notifications": {
+                                "type": "object",
+                                "properties": {
+                                  "title": { "type": "string" },
+                                  "message": { "type": "string" },
+                                  "created_at": { "type": "string" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT obtido via /functions/v1/verify-client-login-code"
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "apikey",
+        "description": "Anon Key pública da API"
+      }
+    },
+    "schemas": {
+      "Client": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "cpf": { "type": "string", "example": "12345678900" },
+          "full_name": { "type": "string", "example": "Nome do Cliente" },
+          "email": { "type": "string", "example": "cliente@email.com" },
+          "phone": { "type": "string", "example": "11999999999" },
+          "birth_date": { "type": "string", "example": "1990-01-15" },
+          "address_street": { "type": "string" },
+          "address_number": { "type": "string" },
+          "address_complement": { "type": "string" },
+          "address_neighborhood": { "type": "string" },
+          "address_city": { "type": "string" },
+          "address_state": { "type": "string" },
+          "address_zip": { "type": "string" },
+          "is_one_member": { "type": "boolean" },
+          "one_member_since": { "type": "string", "format": "date-time", "nullable": true },
+          "favorite_network_id": { "type": "string", "format": "uuid" },
+          "auto_redemption_enabled": { "type": "boolean", "description": "Se true, resgate sem PIN" },
+          "auto_redemption_disable_mode": { "type": "string", "enum": ["immediate", "scheduled"], "description": "Modo de desligamento do resgate automático" },
+          "auto_redemption_disable_scheduled_at": { "type": "string", "format": "date-time", "description": "Data agendada para desligar resgate" },
+          "tutorial_completed": { "type": "boolean" },
+          "total_points": { "type": "number" },
+          "codigo": { "type": "string", "description": "Código de indicação do cliente" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Store": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "example": "Loja Centro" },
+          "address": { "type": "string", "example": "Rua Principal, 100" },
+          "city": { "type": "string", "example": "São Paulo" },
+          "state": { "type": "string", "example": "SP" },
+          "phone": { "type": "string", "example": "1133334444" },
+          "latitude": { "type": "number", "example": -23.5505 },
+          "longitude": { "type": "number", "example": -46.6333 },
+          "opening_hours": { "type": "string", "example": "06:00 - 22:00" },
+          "flag": { "type": "string", "nullable": true, "enum": ["ipiranga", "shell", "vibra", "ale", "branca", "none", null], "description": "Bandeira do posto. Valores: ipiranga, shell, vibra, ale, branca, none ou null" },
+          "services": { "type": "array", "nullable": true, "items": { "type": "string", "enum": ["conveniencia", "totem_eletrico", "caixa_24h", "troca_oleo", "banheiro", "chuveiro", "estacionamento", "lava_jato"] }, "description": "Serviços disponíveis no posto/loja" }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "client_id": { "type": "string", "format": "uuid" },
+          "store_id": { "type": "string", "format": "uuid" },
+          "network_id": { "type": "string", "format": "uuid" },
+          "type": { "type": "string", "enum": ["accumulation", "redemption", "adjustment", "expiration", "bonus"], "description": "Tipo da transação" },
+          "amount": { "type": "number", "example": 100.00 },
+          "points": { "type": "number", "example": 10.00 },
+          "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled", "reversed"] },
+          "created_at": { "type": "string", "format": "date-time" },
+          "stores": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "example": "Loja Centro" }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "AUTH_ERROR" },
+          "message": { "type": "string", "example": "Credenciais inválidas" }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "1. Autenticação", "description": "Login OTP, cadastro e recuperação de senha" },
+    { "name": "2. Dados do Cliente", "description": "Perfil, saldos e configurações do cliente" },
+    { "name": "3. Redes e Lojas", "description": "Redes disponíveis e lojas com localização" },
+    { "name": "4. Transações e Extrato", "description": "Histórico de acúmulo, resgate e movimentações" },
+    { "name": "5. NPS (Avaliação)", "description": "Avaliação de transações e recompensas" },
+    { "name": "6. Notificações", "description": "Notificações e push tokens" },
+    { "name": "7. Leva+ One", "description": "Assinatura premium, promoções e gestão" },
+    { "name": "8. Programa de Retenção", "description": "Compromissos de fidelidade com multiplicadores" },
+    { "name": "9. Programa de Indicação", "description": "Código de indicação e histórico" },
+    { "name": "10. Suporte", "description": "Tickets e mensagens de suporte" },
+    { "name": "11. Utilitários", "description": "CEP e outros utilitários" },
+    { "name": "12. Endpoint Agregado", "description": "Endpoint único que retorna todos os dados necessários para o app" }
+  ]
+}

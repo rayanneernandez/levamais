@@ -1,0 +1,550 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Leva+ API - Integração para ERPs",
+    "description": "API REST para integração de sistemas ERP com a plataforma Leva+ Fidelidade. Permite acúmulo, resgate de pontos/cashback e consulta de transações.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Suporte Leva+",
+      "email": "comercial@levamais.app"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://auivszkscfcpczrkecoc.supabase.co/functions/v1",
+      "description": "Servidor de Produção"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth-token": {
+      "post": {
+        "summary": "Gerar Token de Autenticação",
+        "description": "Autentica um ERP e retorna um Bearer Token para uso nas demais requisições.",
+        "tags": ["Autenticação"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["usuario", "senha", "codigoEmpresa"],
+                "properties": {
+                  "usuario": {
+                    "type": "string",
+                    "description": "Usuário da API fornecido pela Leva+",
+                    "example": "erp_usuario"
+                  },
+                  "senha": {
+                    "type": "string",
+                    "description": "Senha da API fornecida pela Leva+",
+                    "example": "senha_secreta"
+                  },
+                  "codigoEmpresa": {
+                    "type": "string",
+                    "description": "CNPJ da loja (com ou sem formatação)",
+                    "example": "12.345.678/0001-90"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token gerado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bearerToken": {
+                      "type": "string",
+                      "description": "Token para usar no header Authorization",
+                      "example": "leva_live_sk_abc123..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciais inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/venda-validar": {
+      "post": {
+        "summary": "Validar Venda (Pré-Venda)",
+        "description": "Valida CPF/voucher do cliente e retorna se pode acumular ou resgatar pontos/cashback. Também verifica promoções ativas.",
+        "tags": ["Transações"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["codigoEmpresa", "voucher", "codigoVenda", "dataVenda", "valorTotalLiquido", "produtos"],
+                "properties": {
+                  "codigoEmpresa": {
+                    "type": "string",
+                    "description": "CNPJ da loja",
+                    "example": "12.345.678/0001-90"
+                  },
+                  "voucher": {
+                    "type": "string",
+                    "description": "CPF do cliente (com ou sem formatação)",
+                    "example": "123.456.789-00"
+                  },
+                  "codigoVenda": {
+                    "type": "string",
+                    "description": "Código único da venda no ERP",
+                    "example": "VND-12345"
+                  },
+                  "dataVenda": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Data/hora da venda (ISO 8601)",
+                    "example": "2024-01-15T14:30:00-03:00"
+                  },
+                  "valorTotalLiquido": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Valor total da venda",
+                    "example": 150.50
+                  },
+                  "produtos": {
+                    "type": "array",
+                    "description": "Lista de produtos da venda",
+                    "items": {
+                      "type": "object",
+                      "required": ["codigoProduto", "descricaoProduto", "quantidade", "valorUnitario", "valorTotal"],
+                      "properties": {
+                        "codigoProduto": {
+                          "type": "string",
+                          "example": "PROD-001"
+                        },
+                        "descricaoProduto": {
+                          "type": "string",
+                          "example": "Gasolina Comum"
+                        },
+                        "quantidade": {
+                          "type": "number",
+                          "example": 50.5
+                        },
+                        "valorUnitario": {
+                          "type": "number",
+                          "example": 5.89
+                        },
+                        "valorTotal": {
+                          "type": "number",
+                          "example": 297.45
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validação realizada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "idTransacao": {
+                      "type": "string",
+                      "description": "ID da transação para usar no envio final",
+                      "example": "uuid-123-456"
+                    },
+                    "tipoCodigo": {
+                      "type": "string",
+                      "enum": ["P", "R", "D"],
+                      "description": "P=Pontos (acúmulo), R=Resgate, D=Desconto ONE"
+                    },
+                    "cashback": {
+                      "type": "object",
+                      "properties": {
+                        "percentual": {
+                          "type": "number",
+                          "example": 2.5
+                        },
+                        "valorCashback": {
+                          "type": "number",
+                          "example": 3.76
+                        },
+                        "saldoDisponivel": {
+                          "type": "number",
+                          "example": 45.80
+                        }
+                      }
+                    },
+                    "mensagens": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": ["Cliente pode acumular 2,5% de cashback"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/venda-enviar": {
+      "post": {
+        "summary": "Confirmar Venda (Pós-Venda)",
+        "description": "Confirma e finaliza a venda, aplicando o acúmulo ou resgate de pontos/cashback no saldo do cliente.",
+        "tags": ["Transações"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["codigoEmpresa", "codigoVenda", "idTransacao", "dataVenda", "valorTotalLiquido", "produtos", "prazos"],
+                "properties": {
+                  "codigoEmpresa": {
+                    "type": "string",
+                    "example": "12.345.678/0001-90"
+                  },
+                  "codigoVenda": {
+                    "type": "string",
+                    "example": "VND-12345"
+                  },
+                  "idTransacao": {
+                    "type": "string",
+                    "description": "ID retornado pelo venda-validar",
+                    "example": "uuid-123-456"
+                  },
+                  "dataVenda": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T14:30:00-03:00"
+                  },
+                  "valorTotalLiquido": {
+                    "type": "number",
+                    "example": 150.50
+                  },
+                  "produtos": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["codigoProduto", "descricaoProduto", "quantidade", "valorUnitario", "valorTotal"],
+                      "properties": {
+                        "codigoProduto": {
+                          "type": "string",
+                          "example": "PROD-001"
+                        },
+                        "descricaoProduto": {
+                          "type": "string",
+                          "example": "Gasolina Comum"
+                        },
+                        "quantidade": {
+                          "type": "number",
+                          "example": 50.5
+                        },
+                        "valorUnitario": {
+                          "type": "number",
+                          "example": 5.89
+                        },
+                        "valorTotal": {
+                          "type": "number",
+                          "example": 297.45
+                        }
+                      }
+                    }
+                  },
+                  "prazos": {
+                    "type": "array",
+                    "description": "Formas de pagamento",
+                    "items": {
+                      "type": "object",
+                      "required": ["tipoPagamento", "valor"],
+                      "properties": {
+                        "tipoPagamento": {
+                          "type": "string",
+                          "example": "DINHEIRO"
+                        },
+                        "valor": {
+                          "type": "number",
+                          "example": 150.50
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Venda processada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Transação processada com sucesso"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Venda já foi confirmada anteriormente (idempotência)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Transação já foi processada anteriormente"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/venda-cancelar": {
+      "post": {
+        "summary": "Cancelar Venda",
+        "description": "Cancela uma venda confirmada e reverte o acúmulo ou resgate de pontos/cashback.",
+        "tags": ["Transações"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["codigoEmpresa", "codigoVenda", "idTransacao"],
+                "properties": {
+                  "codigoEmpresa": {
+                    "type": "string",
+                    "example": "12.345.678/0001-90"
+                  },
+                  "codigoVenda": {
+                    "type": "string",
+                    "example": "VND-12345"
+                  },
+                  "idTransacao": {
+                    "type": "string",
+                    "example": "uuid-123-456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Venda cancelada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Venda cancelada com sucesso"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-transactions": {
+      "get": {
+        "summary": "Consultar Transações",
+        "description": "Busca histórico de transações por período e status.",
+        "tags": ["Consultas"],
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2024-01-01"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2024-01-31"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "confirmed", "cancelled"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de transações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 150
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "idTransacao": {
+                            "type": "string"
+                          },
+                          "codigoVenda": {
+                            "type": "string"
+                          },
+                          "dataVenda": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "cpfCliente": {
+                            "type": "string"
+                          },
+                          "nomeCliente": {
+                            "type": "string"
+                          },
+                          "valorTotal": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key",
+        "description": "Token obtido através do endpoint /auth-token"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "AUTH_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "example": "Credenciais inválidas"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Autenticação",
+      "description": "Endpoints para autenticação e geração de tokens"
+    },
+    {
+      "name": "Transações",
+      "description": "Endpoints para processar vendas, acúmulo e resgate"
+    },
+    {
+      "name": "Consultas",
+      "description": "Endpoints para consultar dados e histórico"
+    }
+  ]
+}

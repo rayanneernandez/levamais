@@ -1,0 +1,1 @@
+ALTER TABLE public.stores ADD COLUMN max_redemption_sale_percentage integer DEFAULT null;

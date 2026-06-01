@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS trigger_set_attendant_code ON public.store_managers;

@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="./favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Leva+ Fidelidade - Sistema de fidelização simples e automático para postos de gasolina e lojas de conveniência. Comprou, pontua, voltou, resgatou.">
+  <title>Leva+ Fidelidade</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes scale-in {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.6s ease-out forwards;
+    }
+    
+    .animate-scale-in {
+      animation: scale-in 0.5s ease-out forwards;
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.7);
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background-color: #0f172a;
+      margin: auto;
+      padding: 1.5rem;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 450px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen overflow-x-hidden">
+  
+  <!-- Header -->
+  <header class="fixed top-0 w-full z-50 backdrop-blur-xl bg-slate-950/80 border-b border-cyan-500/30">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center">
+        <img src="https://portal.levamais.app/logo-white.png" alt="Leva+" class="h-12" />
+      </div>
+      
+      <div class="relative">
+        <button id="accessBtn" class="border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black bg-transparent transition-all duration-300 font-bold px-4 py-2 rounded-md flex items-center gap-2">
+          ACESSAR
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+        <div id="accessMenu" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-black border border-cyan-500/50 z-50">
+          <div class="py-1">
+            <a href="https://portal.levamais.app/levaloja/auth" class="flex items-center px-4 py-2 text-sm text-white hover:bg-cyan-500/20">
+              <i data-lucide="store" class="w-4 h-4 mr-2 text-cyan-400"></i>
+              Leva+ Lojista
+            </a>
+            <a href="https://portal.levamais.app/levacliente/auth" class="flex items-center px-4 py-2 text-sm text-white hover:bg-purple-500/20">
+              <i data-lucide="user" class="w-4 h-4 mr-2 text-purple-400"></i>
+              Leva+ Cliente
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="min-h-screen flex items-center justify-center relative pt-16 bg-slate-950">
+    <div id="gradientBg" class="fixed inset-0 opacity-20 pointer-events-none"></div>
+    <div class="fixed inset-0 opacity-5 pointer-events-none" style="background-image: linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px); background-size: 50px 50px;"></div>
+    
+    <div class="container mx-auto px-4 py-12 relative z-10">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center space-y-6 mb-12">
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] animate-fade-in">
+            <span class="block text-white">Fidelize clientes de forma</span>
+            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+              simples, automática
+            </span>
+            <span class="block text-white">e sem complicação.</span>
+          </h1>
+
+          <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed animate-fade-in mt-6">
+            O Leva+ Fidelidade nasceu para ser diferente: <span class="text-cyan-400 font-bold">comprou → pontua → voltou → resgata</span>.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in mt-12">
+          <button onclick="openWhatsAppModal()" class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold text-base px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(0,255,255,0.5)] w-full sm:w-auto flex items-center justify-center gap-2">
+            👉 Quero fidelizar meus clientes
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+      <div class="w-6 h-10 border-2 border-cyan-400/50 rounded-full flex justify-center">
+        <div class="w-1 h-3 bg-cyan-400 rounded-full mt-2 animate-pulse"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Retention Section -->
+  <section class="py-16 md:py-24 relative bg-slate-900 border-y border-cyan-500/20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-16 space-y-4">
+          <h2 class="text-3xl md:text-4xl font-black leading-tight">
+            <span class="text-white">Reter é mais</span>
+            <span class="block text-cyan-400">lucrativo do que conquistar.</span>
+          </h2>
+          <div class="h-1 w-24 bg-cyan-400 mx-auto"></div>
+          <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed mt-6">
+            Você sabia que:
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+          <div class="p-6 bg-cyan-500/5 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 rounded-lg">
+            <div class="text-3xl md:text-4xl font-black text-cyan-400 mb-3">5x</div>
+            <p class="text-slate-300 text-sm leading-relaxed">Manter um cliente custa até 5x menos do que conquistar um novo</p>
+          </div>
+          <div class="p-6 bg-cyan-500/5 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 rounded-lg">
+            <div class="text-3xl md:text-4xl font-black text-cyan-400 mb-3">95%</div>
+            <p class="text-slate-300 text-sm leading-relaxed">Aumentar sua taxa de retenção em 5% pode elevar o lucro em até 95%</p>
+          </div>
+          <div class="p-6 bg-cyan-500/5 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 rounded-lg">
+            <div class="text-3xl md:text-4xl font-black text-cyan-400 mb-3">67%</div>
+            <p class="text-slate-300 text-sm leading-relaxed">Clientes fiéis gastam em média 67% a mais do que novos clientes</p>
+          </div>
+          <div class="p-6 bg-cyan-500/5 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 rounded-lg">
+            <div class="text-3xl md:text-4xl font-black text-cyan-400 mb-3">80%+</div>
+            <p class="text-slate-300 text-sm leading-relaxed">No varejo, a taxa média de retenção é 63% — os melhores passam dos 80%</p>
+          </div>
+        </div>
+
+        <p class="text-center text-base md:text-lg text-white font-bold mt-12">
+          Esses números mostram uma verdade simples: fidelizar é o melhor investimento que seu posto ou loja pode fazer.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section class="py-16 md:py-24 relative bg-slate-950 border-y border-red-500/20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-16 space-y-4">
+          <h2 class="text-3xl md:text-4xl font-black leading-tight">
+            <span class="text-white">O que você já</span>
+            <span class="block text-red-500">cansou de ver por aí...</span>
+          </h2>
+          <div class="h-1 w-24 bg-red-500 mx-auto"></div>
+        </div>
+
+        <div class="flex flex-col items-center gap-6 mb-12">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+            <div class="p-6 bg-red-500/5 border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:scale-105 rounded-lg group">
+              <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🎴</div>
+              <p class="text-slate-300 text-sm leading-relaxed">Cartões de fidelidade que o cliente perde ou esquece</p>
+            </div>
+            <div class="p-6 bg-red-500/5 border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:scale-105 rounded-lg group">
+              <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📱</div>
+              <p class="text-slate-300 text-sm leading-relaxed">Apps que ninguém usa, cada um de um fornecedor diferente</p>
+            </div>
+            <div class="p-6 bg-red-500/5 border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:scale-105 rounded-lg group">
+              <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🔌</div>
+              <p class="text-slate-300 text-sm leading-relaxed">Falta de integração com o sistema de vendas (ERP)</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+            <div class="p-6 bg-red-500/5 border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:scale-105 rounded-lg group">
+              <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📊</div>
+              <p class="text-slate-300 text-sm leading-relaxed">Processos manuais, relatórios confusos e sem controle real</p>
+            </div>
+            <div class="p-6 bg-red-500/5 border border-red-500/20 hover:border-red-500/40 transition-all duration-300 hover:scale-105 rounded-lg group">
+              <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">💸</div>
+              <p class="text-slate-300 text-sm leading-relaxed">Custos altos para manter um programa que não gera resultado</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <p class="text-xl md:text-2xl text-cyan-400 font-black">
+            👉 Nós resolvemos tudo isso.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution Section -->
+  <section id="como-funciona" class="py-16 md:py-24 relative bg-slate-900 border-y border-cyan-500/20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16 space-y-4">
+          <h2 class="text-3xl md:text-4xl font-black leading-tight">
+            <span class="text-white">Nascemos</span>
+            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+              simples, automáticos e integrados.
+            </span>
+          </h2>
+          <div class="h-1 w-24 bg-gradient-to-r from-cyan-400 to-purple-600 mx-auto"></div>
+        </div>
+
+        <!-- Interactive Journey -->
+        <div class="relative max-w-5xl mx-auto mb-12">
+          <div id="journeyInitial" class="text-center py-8">
+            <div class="inline-block mb-4 text-5xl animate-bounce">🎮</div>
+            <h3 class="text-xl md:text-2xl font-black text-white mb-3">
+              Veja na prática como funciona
+            </h3>
+            <p class="text-slate-300 text-sm mb-6 max-w-xl mx-auto">
+              Clique no botão abaixo e acompanhe passo a passo a jornada do seu cliente
+            </p>
+            <button onclick="startJourney()" class="bg-gradient-to-r from-cyan-400 to-purple-600 hover:from-cyan-500 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(0,255,255,0.4)] flex items-center gap-2 mx-auto">
+              🚀 INICIAR JORNADA
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Journey Steps (hidden initially) -->
+          <div id="journeySteps" class="hidden space-y-6">
+            <div class="flex items-center justify-center gap-2 mb-4">
+              <div id="progress0" class="h-2 w-8 rounded-full bg-slate-700 transition-all duration-500"></div>
+              <div id="progress1" class="h-2 w-8 rounded-full bg-slate-700 transition-all duration-500"></div>
+              <div id="progress2" class="h-2 w-8 rounded-full bg-slate-700 transition-all duration-500"></div>
+              <div id="progress3" class="h-2 w-8 rounded-full bg-slate-700 transition-all duration-500"></div>
+              <div id="progress4" class="h-2 w-8 rounded-full bg-slate-700 transition-all duration-500"></div>
+            </div>
+
+            <div id="step0" class="hidden animate-fade-in text-center space-y-4">
+              <div class="text-6xl mb-2 animate-scale-in">🚶‍♂️</div>
+              <h3 class="text-2xl font-black text-white">Cliente chega na conveniência</h3>
+              <p class="text-slate-300 text-sm max-w-xl mx-auto">João precisa fazer compras na loja de conveniência</p>
+              <button onclick="nextStep()" class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                PRÓXIMO →
+              </button>
+            </div>
+
+            <div id="step1" class="hidden animate-fade-in text-center space-y-4">
+              <div class="text-6xl mb-2 animate-scale-in">🛒</div>
+              <h3 class="text-2xl font-black text-white">Realiza a compra</h3>
+              <div class="bg-slate-800/50 border border-cyan-500/30 rounded-xl p-6 max-w-md mx-auto">
+                <p class="text-slate-300 text-sm mb-2">João comprou:</p>
+                <p class="text-4xl font-black text-cyan-400 mb-1">R$ 100,00</p>
+                <p class="text-slate-400 text-xs">Produtos da conveniência</p>
+              </div>
+              <button onclick="nextStep()" class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                PRÓXIMO →
+              </button>
+            </div>
+
+            <div id="step2" class="hidden animate-fade-in text-center space-y-3">
+              <div class="text-6xl mb-2 animate-scale-in">⚡</div>
+              <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+                Cashback automático!
+              </h3>
+              <div class="bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 max-w-md mx-auto">
+                <p class="text-slate-300 text-sm mb-1">Nessa loja, o cashback é de 1%</p>
+                <p class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600 mb-1 animate-pulse">
+                  +R$ 1,00
+                </p>
+                <p class="text-slate-400 text-xs mb-2">João acumulou dessa compra</p>
+                <div class="border-t border-white/10 pt-2">
+                  <p class="text-slate-400 text-xs mb-1">João é cliente frequente e já tinha:</p>
+                  <p class="text-xl font-black text-purple-400">R$ 14,00</p>
+                  <p class="text-slate-500 text-xs">de cashback acumulado</p>
+                </div>
+              </div>
+              <div class="flex items-center justify-center gap-3 text-xs text-slate-400">
+                <i data-lucide="check" class="h-4 w-4 text-cyan-400"></i>
+                <span>Integrado ao checkout</span>
+                <i data-lucide="check" class="h-4 w-4 text-cyan-400"></i>
+                <span>Sem burocracia</span>
+              </div>
+              <button onclick="nextStep()" class="bg-purple-400 hover:bg-purple-500 text-black font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                PRÓXIMO →
+              </button>
+            </div>
+
+            <div id="step3" class="hidden animate-fade-in text-center space-y-4">
+              <div class="text-6xl mb-2 animate-scale-in">🔄</div>
+              <h3 class="text-2xl font-black text-white">João volta alguns dias depois</h3>
+              <p class="text-slate-300 text-sm max-w-xl mx-auto">
+                Ao chegar no caixa para pagar as novas compras...
+              </p>
+              <div class="bg-slate-800/50 border border-purple-500/30 rounded-xl p-5 max-w-md mx-auto">
+                <p class="text-slate-400 text-xs mb-1">Saldo de cashback disponível:</p>
+                <p class="text-3xl font-black text-purple-400">R$ 15,00</p>
+                <p class="text-slate-500 text-xs mt-1">(R$ 14,00 anteriores + R$ 1,00 da última compra)</p>
+              </div>
+              <button onclick="nextStep()" class="bg-purple-400 hover:bg-purple-500 text-black font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                PRÓXIMO →
+              </button>
+            </div>
+
+            <div id="step4" class="hidden animate-fade-in text-center space-y-4">
+              <div class="text-6xl mb-2 animate-scale-in">🎉</div>
+              <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+                Desconto automático aplicado!
+              </h3>
+              <div class="bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-cyan-500/10 border border-cyan-500/30 rounded-xl p-6 max-w-md mx-auto">
+                <p class="text-slate-300 text-sm mb-2">
+                  João foi ao caixa e recebeu automaticamente:
+                </p>
+                <p class="text-4xl font-black text-cyan-400 mb-2">-R$ 15,00</p>
+                <p class="text-slate-400 text-xs mb-4">de desconto no valor total da compra</p>
+                <div class="border-t border-white/10 pt-3">
+                  <p class="text-base font-bold text-white mb-1">Resultado: Cliente fidelizado! 😊</p>
+                  <p class="text-xs text-slate-400">
+                    Ele vai continuar voltando para usar seu cashback
+                  </p>
+                </div>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onclick="restartJourney()" class="border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black bg-transparent font-bold px-6 py-3 rounded-xl transition-all duration-300">
+                  🔄 VER NOVAMENTE
+                </button>
+                <button onclick="openWhatsAppModal()" class="bg-gradient-to-r from-cyan-400 to-purple-600 hover:from-cyan-500 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center gap-2">
+                  QUERO ISSO PRO MEU NEGÓCIO
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div id="backButton" class="text-center pt-4">
+              <button onclick="exitJourney()" class="text-slate-500 hover:text-white text-sm">
+                ← Voltar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Diferenciais -->
+        <div class="bg-slate-950/50 rounded-2xl p-6 md:p-10 border border-cyan-500/20">
+          <h3 class="text-2xl md:text-3xl font-black text-center mb-10">
+            <span class="text-cyan-400">Nossos diferenciais</span>
+          </h3>
+          
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="users" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Clientes ilimitados</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="trending-up" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Transações ilimitadas</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="bar-chart-3" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Dashboard geral e por CNPJ</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="zap" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Relatórios com projeções</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="store" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Portal do Posto/Loja + Cliente</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="headphones" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Suporte via WhatsApp</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="sparkles" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Rápido para assinar e implantar</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="sparkles" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Em breve: novas integrações</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-300">
+              <div class="flex-shrink-0 text-cyan-400">
+                <i data-lucide="check" class="h-6 w-6"></i>
+              </div>
+              <span class="text-sm md:text-base">Cashback OU Pontos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-12">
+          <button onclick="openWhatsAppModal()" class="bg-gradient-to-r from-cyan-400 to-purple-600 hover:from-cyan-500 hover:to-purple-700 text-white font-bold text-base px-8 py-5 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(0,255,255,0.4)] flex items-center gap-2 mx-auto">
+            QUERO ISSO PRO MEU NEGÓCIO
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Target Audience Section -->
+  <section class="py-16 md:py-24 relative bg-slate-950 border-y border-purple-500/20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-black leading-tight mb-6">
+          <span class="text-white">Feito para</span>
+          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+            Postos de Gasolina e Lojas de Conveniência
+          </span>
+        </h2>
+        <div class="h-1 w-24 bg-gradient-to-r from-cyan-400 to-purple-600 mx-auto mb-8"></div>
+        
+        <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-6">
+          Seu público é recorrente, o fluxo é constante e as compras são repetidas.
+        </p>
+        <p class="text-base md:text-lg text-white font-bold">
+          Fidelizar nesse segmento é o caminho mais rápido para aumentar receita e ticket médio.
+        </p>
+        <p class="text-sm md:text-base text-slate-400 mt-8">
+          O Leva+ foi criado para esse mercado — com <span class="text-cyan-400 font-bold">implantação rápida, visual limpo e controle total</span>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section class="py-12 md:py-16 relative bg-slate-950 border-y border-cyan-500/20" id="planos">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8 space-y-2">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/20 border border-red-500/50 mb-2">
+            <i data-lucide="sparkles" class="h-3 w-3 text-red-400"></i>
+            <span class="text-xs font-bold text-red-400">PROMOÇÃO ATÉ DEZEMBRO/2025</span>
+          </div>
+          
+          <h2 class="text-2xl md:text-3xl font-black leading-tight">
+            <span class="text-white">Simples até </span>
+            <span class="text-cyan-400">no preço.</span>
+          </h2>
+          <div class="h-1 w-20 bg-cyan-400 mx-auto"></div>
+        </div>
+
+        <div class="relative p-6 md:p-8 rounded-lg bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-2 border-cyan-500/30 overflow-hidden group hover:border-cyan-500/50 transition-all duration-300 shadow-xl">
+          <div class="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+            💥 PROMOÇÃO
+          </div>
+          
+          <div class="relative z-10 space-y-4">
+            <div class="grid md:grid-cols-2 gap-4 pb-4">
+              <div class="text-center">
+                <p class="text-sm text-cyan-400 font-bold mb-2 uppercase tracking-wider">Implantação</p>
+                <div class="text-slate-500 line-through text-sm mb-1">De R$ 599,00</div>
+                <div class="text-3xl md:text-4xl font-black text-cyan-400 mb-1">
+                  <span class="text-base text-slate-400">por </span>R$ 300
+                  <span class="text-base text-slate-400">/único</span>
+                </div>
+                <p class="text-sm text-slate-300 font-bold">por CNPJ</p>
+              </div>
+              <div class="text-center">
+                <p class="text-sm text-cyan-400 font-bold mb-2 uppercase tracking-wider">Assinatura</p>
+                <div class="text-slate-500 line-through text-sm mb-1">De R$ 299,00</div>
+                <div class="text-3xl md:text-4xl font-black text-cyan-400 mb-1">
+                  <span class="text-base text-slate-400">por </span>R$ 199
+                  <span class="text-base text-slate-400">/mês</span>
+                </div>
+                <p class="text-sm text-slate-300 font-bold">por CNPJ</p>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/30 border border-cyan-500/20 rounded-xl p-4">
+              <h3 class="text-base font-bold text-cyan-400 mb-4 text-center uppercase tracking-wide">O que inclui</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                <div class="space-y-3">
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Clientes ilimitados</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Transações ilimitadas</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Dashboard completo</span>
+                  </div>
+                </div>
+                <div class="space-y-3">
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Relatórios e projeções</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Portal do Posto/Loja</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Portal do Cliente</span>
+                  </div>
+                </div>
+                <div class="space-y-3">
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Suporte WhatsApp</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Integração WebPosto</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="check" class="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-base text-slate-300">Monitoramento de Transações</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="openWhatsAppModal()" class="w-full bg-cyan-400 hover:bg-cyan-500 text-black font-bold text-sm md:text-base py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(0,255,255,0.4)] flex items-center justify-center gap-2">
+                🚀 QUERO IMPLANTAR AGORA
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 text-center">
+          <p class="text-red-400 font-bold text-sm">
+            💥 Promoção válida até dezembro de 2025
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="py-16 md:py-24 relative bg-slate-950 border-y border-cyan-500/20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-16 space-y-4">
+          <h2 class="text-3xl md:text-4xl font-black leading-tight">
+            <span class="text-cyan-400">Perguntas frequentes</span>
+          </h2>
+          <div class="h-1 w-24 bg-cyan-400 mx-auto"></div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-white/5 border border-white/10 hover:border-cyan-500/30 rounded-lg px-5 transition-all duration-300">
+            <button class="faq-question w-full text-left py-4 flex justify-between items-center">
+              <span class="text-sm md:text-base font-bold text-white">Posso escolher entre pontos e cashback?</span>
+              <i data-lucide="chevron-down" class="h-5 w-5 text-white transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden pb-4">
+              <p class="text-sm text-slate-300 leading-relaxed">Sim! Você define o modelo ideal para o seu negócio.</p>
+            </div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 hover:border-cyan-500/30 rounded-lg px-5 transition-all duration-300">
+            <button class="faq-question w-full text-left py-4 flex justify-between items-center">
+              <span class="text-sm md:text-base font-bold text-white">É compatível com meu sistema?</span>
+              <i data-lucide="chevron-down" class="h-5 w-5 text-white transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden pb-4">
+              <p class="text-sm text-slate-300 leading-relaxed">Atualmente integrado ao WebPosto — novas integrações estão em andamento.</p>
+            </div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 hover:border-cyan-500/30 rounded-lg px-5 transition-all duration-300">
+            <button class="faq-question w-full text-left py-4 flex justify-between items-center">
+              <span class="text-sm md:text-base font-bold text-white">Tem limite de clientes ou transações?</span>
+              <i data-lucide="chevron-down" class="h-5 w-5 text-white transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden pb-4">
+              <p class="text-sm text-slate-300 leading-relaxed">Não. Todos os planos têm clientes e transações ilimitadas.</p>
+            </div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 hover:border-cyan-500/30 rounded-lg px-5 transition-all duration-300">
+            <button class="faq-question w-full text-left py-4 flex justify-between items-center">
+              <span class="text-sm md:text-base font-bold text-white">Quanto tempo leva para implantar?</span>
+              <i data-lucide="chevron-down" class="h-5 w-5 text-white transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden pb-4">
+              <p class="text-sm text-slate-300 leading-relaxed">De 3 a 5 dias úteis, dependendo da configuração.</p>
+            </div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 hover:border-cyan-500/30 rounded-lg px-5 transition-all duration-300">
+            <button class="faq-question w-full text-left py-4 flex justify-between items-center">
+              <span class="text-sm md:text-base font-bold text-white">Como é o suporte?</span>
+              <i data-lucide="chevron-down" class="h-5 w-5 text-white transition-transform"></i>
+            </button>
+            <div class="faq-answer hidden pb-4">
+              <p class="text-sm text-slate-300 leading-relaxed">Direto pelo WhatsApp, sem fila ou espera.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA Section -->
+  <section class="py-16 md:py-24 relative bg-slate-900 border-y border-purple-500/20" id="contato">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl md:text-5xl font-black leading-tight mb-6">
+          <span class="text-white">Fidelizar não precisa</span>
+          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+            ser difícil.
+          </span>
+          <span class="block text-white">É só escolher o simples.</span>
+        </h2>
+        <div class="h-1 w-24 bg-gradient-to-r from-cyan-400 to-purple-600 mx-auto mb-8"></div>
+        
+        <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-12">
+          Transforme seu posto ou loja de conveniência em uma <span class="text-white font-bold">máquina de recompra</span>.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <button onclick="openWhatsAppModal()" class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold text-base md:text-lg px-6 md:px-7 py-3 md:py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(0,255,255,0.4)] w-full sm:w-auto flex items-center justify-center gap-2">
+            🚀 Quero implantar agora
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+          
+          <button onclick="openWhatsAppModal()" class="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black font-bold text-base md:text-lg px-6 md:px-7 py-3 md:py-4 rounded-xl transition-all duration-300 w-full sm:w-auto">
+            📱 Falar no WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Form Section -->
+  <section class="py-16 md:py-24 relative bg-slate-950 border-y border-cyan-500/20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-12 space-y-4">
+          <h2 class="text-2xl md:text-3xl font-black leading-tight">
+            <span class="text-white">Ou solicite uma</span>
+            <span class="block text-cyan-400">demonstração</span>
+          </h2>
+          <div class="h-1 w-24 bg-cyan-400 mx-auto"></div>
+        </div>
+
+        <div class="p-8 md:p-10 bg-white/5 border border-white/10 rounded-lg">
+          <form id="contactForm" class="space-y-6">
+            <div class="space-y-2">
+              <label for="name" class="text-white font-bold text-xs uppercase tracking-wide block">Nome Completo</label>
+              <input 
+                type="text"
+                id="name"
+                name="name"
+                required 
+                maxlength="100"
+                class="w-full bg-black/50 border border-white/20 text-white focus:border-cyan-400 focus:outline-none transition-colors h-10 px-3 rounded-md text-sm"
+                placeholder="João Silva"
+              />
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="space-y-2">
+                <label for="email" class="text-white font-bold text-xs uppercase tracking-wide block">Email</label>
+                <input 
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  maxlength="255"
+                  class="w-full bg-black/50 border border-white/20 text-white focus:border-cyan-400 focus:outline-none transition-colors h-10 px-3 rounded-md text-sm"
+                  placeholder="joao@empresa.com"
+                />
+              </div>
+              <div class="space-y-2">
+                <label for="phone" class="text-white font-bold text-xs uppercase tracking-wide block">Telefone</label>
+                <input 
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  required
+                  maxlength="20"
+                  class="w-full bg-black/50 border border-white/20 text-white focus:border-cyan-400 focus:outline-none transition-colors h-10 px-3 rounded-md text-sm"
+                  placeholder="(21) 99999-9999"
+                />
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label for="company" class="text-white font-bold text-xs uppercase tracking-wide block">Empresa</label>
+              <input 
+                type="text"
+                id="company"
+                name="company"
+                required
+                maxlength="100"
+                class="w-full bg-black/50 border border-white/20 text-white focus:border-cyan-400 focus:outline-none transition-colors h-10 px-3 rounded-md text-sm"
+                placeholder="Nome da empresa"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="stores" class="text-white font-bold text-xs uppercase tracking-wide block">Quantidade de Postos/Lojas</label>
+              <input 
+                type="number"
+                id="stores"
+                name="stores"
+                min="1"
+                required 
+                class="w-full bg-black/50 border border-white/20 text-white focus:border-cyan-400 focus:outline-none transition-colors h-10 px-3 rounded-md text-sm"
+                placeholder="1"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label for="message" class="text-white font-bold text-xs uppercase tracking-wide block">Mensagem</label>
+              <textarea 
+                id="message"
+                name="message"
+                required
+                maxlength="1000"
+                rows="5"
+                class="w-full bg-black/50 border border-white/20 text-white focus:border-cyan-400 focus:outline-none transition-colors resize-none px-3 py-2 rounded-md text-sm"
+                placeholder="Conte mais sobre seu negócio e como podemos ajudar..."
+              ></textarea>
+            </div>
+
+            <button 
+              type="submit"
+              class="w-full bg-cyan-400 hover:bg-cyan-500 text-black font-bold text-base md:text-lg py-3 md:py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(0,255,255,0.4)] flex items-center justify-center gap-2"
+            >
+              ENVIAR MENSAGEM
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </form>
+
+          <div id="formMessage" class="hidden mt-4 p-4 rounded-lg"></div>
+        </div>
+
+        <div class="mt-8 text-center">
+          <p class="text-slate-500 text-sm mb-4">Ou fale direto pelo WhatsApp</p>
+          <button onclick="openWhatsAppModal()" class="border border-white/20 bg-transparent text-white hover:bg-white hover:text-black font-bold text-sm px-6 py-3 rounded-md transition-all duration-300 flex items-center gap-2 mx-auto">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+            CHAMAR NO WHATSAPP
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-cyan-500/20 bg-slate-900 py-12">
+    <div class="container mx-auto px-4">
+      <div class="text-center space-y-6">
+        <div class="flex items-center justify-center gap-2 mb-4">
+          <img src="https://portal.levamais.app/logo-white.png" alt="Leva+" class="h-8" />
+        </div>
+        
+        <p class="text-slate-300 text-lg">
+          O app que transforma cada compra em vantagem
+        </p>
+        
+        <div class="flex flex-col items-center justify-center gap-4 text-sm">
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <a href="https://api.whatsapp.com/send/?phone=552139507641&text=Ol%C3%A1%2C+vim+do+site+e+gostaria+de+mudar+o+modelo+de+fidelidade+do+meu+Posto/Loja.&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 transition-colors">
+              <i data-lucide="message-circle" class="h-5 w-5 text-green-400"></i>
+              <span class="text-cyan-400 hover:text-cyan-300 font-semibold">(21) 3950-7641</span>
+            </a>
+            <span class="text-slate-600">•</span>
+            <a href="https://levamais.app" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors">
+              <i data-lucide="globe" class="h-5 w-5"></i>
+              <span>levamais.app</span>
+            </a>
+            <span class="text-slate-600">•</span>
+            <a href="https://www.instagram.com/levamais.app/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors">
+              <i data-lucide="instagram" class="h-5 w-5"></i>
+              <span>@levamais.app</span>
+            </a>
+          </div>
+          <a href="mailto:contato@levamais.app" class="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors">
+            <i data-lucide="mail" class="h-5 w-5"></i>
+            <span>contato@levamais.app</span>
+          </a>
+        </div>
+        
+        <div class="border-t border-cyan-500/10 pt-6">
+          <p class="text-slate-400">
+            © 2025 Leva+ by BISW. Todos os direitos reservados.
+          </p>
+          <p class="text-slate-500 text-sm mt-2 italic">
+            "Fazer o simples ser simples é o que nos torna únicos."
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- WhatsApp Modal -->
+  <div id="whatsappModal" class="modal">
+    <div class="modal-content">
+      <div class="mb-6">
+        <h3 class="text-2xl font-bold text-white mb-2">Vamos conversar no WhatsApp!</h3>
+        <p class="text-slate-400 text-sm">
+          Para melhor atendê-lo, preencha seus dados abaixo. Não se preocupe, suas informações estão seguras conosco.
+        </p>
+      </div>
+
+      <div class="space-y-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Nome completo *</label>
+          <input 
+            type="text" 
+            id="whatsapp-name" 
+            required 
+            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400"
+            placeholder="Digite seu nome completo"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">E-mail *</label>
+          <input 
+            type="email" 
+            id="whatsapp-email" 
+            required 
+            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400"
+            placeholder="seu@email.com"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Telefone/WhatsApp *</label>
+          <input 
+            type="tel" 
+            id="whatsapp-phone" 
+            required 
+            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-400"
+            placeholder="(00) 00000-0000"
+          />
+        </div>
+      </div>
+
+      <div id="whatsappMessage" class="hidden mb-4"></div>
+
+      <div class="flex gap-3">
+        <button 
+          onclick="closeWhatsAppModal()" 
+          class="flex-1 border border-slate-600 text-slate-200 bg-slate-800/50 hover:bg-slate-700 font-semibold text-sm px-3 py-2.5 rounded-lg transition-all"
+        >
+          Cancelar
+        </button>
+        <button 
+          onclick="handleWhatsAppSubmit()" 
+          class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold text-sm px-3 py-2.5 rounded-lg transition-all inline-flex items-center justify-center gap-2"
+        >
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          Continuar
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-500 text-center mt-4">
+        Seus dados serão salvos no nosso sistema para melhor atendimento
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Mouse gradient effect
+    document.addEventListener('mousemove', (e) => {
+      const gradient = document.getElementById('gradientBg');
+      if (gradient) {
+        gradient.style.background = `radial-gradient(circle at ${e.clientX}px ${e.clientY}px, rgba(0, 255, 255, 0.1), transparent 50%)`;
+      }
+    });
+
+    // Access menu toggle
+    const accessBtn = document.getElementById('accessBtn');
+    const accessMenu = document.getElementById('accessMenu');
+    
+    if (accessBtn && accessMenu) {
+      accessBtn.addEventListener('click', () => {
+        accessMenu.classList.toggle('hidden');
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!accessBtn.contains(e.target) && !accessMenu.contains(e.target)) {
+          accessMenu.classList.add('hidden');
+        }
+      });
+    }
+
+    // FAQ accordion
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    faqQuestions.forEach(question => {
+      question.addEventListener('click', () => {
+        const answer = question.nextElementSibling;
+        const icon = question.querySelector('[data-lucide="chevron-down"]');
+        
+        answer.classList.toggle('hidden');
+        icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+      });
+    });
+
+    // Journey functionality
+    let currentStep = 0;
+
+    function startJourney() {
+      document.getElementById('journeyInitial').classList.add('hidden');
+      document.getElementById('journeySteps').classList.remove('hidden');
+      currentStep = 0;
+      showStep(0);
+    }
+
+    function nextStep() {
+      if (currentStep < 4) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    }
+
+    function showStep(step) {
+      // Hide all steps
+      for (let i = 0; i <= 4; i++) {
+        document.getElementById(`step${i}`).classList.add('hidden');
+      }
+      
+      // Show current step
+      document.getElementById(`step${step}`).classList.remove('hidden');
+      
+      // Update progress
+      for (let i = 0; i <= 4; i++) {
+        const progress = document.getElementById(`progress${i}`);
+        if (i <= step) {
+          progress.classList.add('w-12', 'bg-gradient-to-r', 'from-cyan-400', 'to-purple-600');
+          progress.classList.remove('w-8', 'bg-slate-700');
+        } else {
+          progress.classList.remove('w-12', 'bg-gradient-to-r', 'from-cyan-400', 'to-purple-600');
+          progress.classList.add('w-8', 'bg-slate-700');
+        }
+      }
+      
+      // Hide back button on last step
+      if (step === 4) {
+        document.getElementById('backButton').classList.add('hidden');
+      } else {
+        document.getElementById('backButton').classList.remove('hidden');
+      }
+      
+      // Re-initialize icons
+      lucide.createIcons();
+    }
+
+    function restartJourney() {
+      currentStep = 0;
+      showStep(0);
+    }
+
+    function exitJourney() {
+      document.getElementById('journeySteps').classList.add('hidden');
+      document.getElementById('journeyInitial').classList.remove('hidden');
+      currentStep = 0;
+    }
+
+    // WhatsApp Modal functions
+    function openWhatsAppModal() {
+      document.getElementById('whatsappModal').classList.add('show');
+      lucide.createIcons();
+    }
+
+    function closeWhatsAppModal() {
+      document.getElementById('whatsappModal').classList.remove('show');
+    }
+
+    async function handleWhatsAppSubmit() {
+      const name = document.getElementById('whatsapp-name').value.trim();
+      const email = document.getElementById('whatsapp-email').value.trim();
+      const phone = document.getElementById('whatsapp-phone').value.trim();
+      const messageDiv = document.getElementById('whatsappMessage');
+
+      // Validações
+      if (name.length < 3) {
+        messageDiv.className = 'p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400 text-sm';
+        messageDiv.textContent = 'Por favor, insira seu nome completo (mínimo 3 caracteres).';
+        messageDiv.classList.remove('hidden');
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        messageDiv.className = 'p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400 text-sm';
+        messageDiv.textContent = 'Por favor, insira um e-mail válido.';
+        messageDiv.classList.remove('hidden');
+        return;
+      }
+
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+        messageDiv.className = 'p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400 text-sm';
+        messageDiv.textContent = 'Por favor, insira um telefone válido (10 ou 11 dígitos).';
+        messageDiv.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        messageDiv.className = 'p-3 rounded-lg bg-blue-500/20 border border-blue-500/50 text-blue-400 text-sm';
+        messageDiv.textContent = 'Salvando informações...';
+        messageDiv.classList.remove('hidden');
+
+        const response = await fetch('https://auivszkscfcpczrkecoc.supabase.co/functions/v1/send-contact-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: name,
+            email: email.toLowerCase(),
+            phone: phoneDigits,
+            company: '',
+            stores: '1',
+            message: 'Contato via botão WhatsApp - Cliente interessado em fidelização'
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha ao salvar informações');
+        }
+
+        closeWhatsAppModal();
+        window.open(`https://api.whatsapp.com/send/?phone=552139507641&text=Ol%C3%A1%2C+vim+do+site+e+gostaria+de+mudar+o+modelo+de+fidelidade+do+meu+Posto/Loja.+Meu+nome+%C3%A9+${encodeURIComponent(name)}.&type=phone_number&app_absent=0`, '_blank');
+        
+        document.getElementById('whatsapp-name').value = '';
+        document.getElementById('whatsapp-email').value = '';
+        document.getElementById('whatsapp-phone').value = '';
+        messageDiv.classList.add('hidden');
+      } catch (error) {
+        messageDiv.className = 'p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400 text-sm';
+        messageDiv.textContent = 'Erro ao processar. Tente novamente ou fale diretamente pelo WhatsApp.';
+        messageDiv.classList.remove('hidden');
+      }
+    }
+
+    // Contact form submission
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        company: formData.get('company'),
+        stores: formData.get('stores'),
+        message: formData.get('message'),
+      };
+
+      const messageDiv = document.getElementById('formMessage');
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      
+      // Desabilitar botão e mostrar loading
+      submitButton.disabled = true;
+      submitButton.textContent = 'ENVIANDO...';
+      
+      try {
+        const response = await fetch('https://auivszkscfcpczrkecoc.supabase.co/functions/v1/send-contact-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha ao enviar mensagem');
+        }
+        
+        messageDiv.className = 'mt-4 p-4 rounded-lg bg-green-500/20 border border-green-500/50 text-green-400';
+        messageDiv.textContent = 'Mensagem enviada com sucesso! Nossa equipe entrará em contato em até 24 horas.';
+        messageDiv.classList.remove('hidden');
+        
+        // Limpar formulário
+        e.target.reset();
+        
+        // Esconder mensagem após 5 segundos
+        setTimeout(() => {
+          messageDiv.classList.add('hidden');
+        }, 5000);
+        
+      } catch (error) {
+        messageDiv.className = 'mt-4 p-4 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400';
+        messageDiv.textContent = 'Erro ao enviar mensagem. Por favor, tente novamente ou entre em contato pelo WhatsApp.';
+        messageDiv.classList.remove('hidden');
+      } finally {
+        // Reabilitar botão
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'ENVIAR MENSAGEM<i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>';
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>

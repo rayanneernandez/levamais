@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- Prevent stale HTML cache so users always get the latest JS bundle hash -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Leva+ One" />
+    <link rel="apple-touch-icon" href="/pwa-icon-512.png" />
+    <title>Leva+ | Solução de Fidelidade</title>
+    <meta name="description" content="Sistema completo de fidelidade para redes de lojas. Gerencie pontos, cashback e recompensas de forma integrada.">
+    <meta name="author" content="Leva+" />
+
+    <!-- Performance: Preconnect to API origins -->
+    <link rel="dns-prefetch" href="https://auivszkscfcpczrkecoc.supabase.co" />
+    <link rel="preconnect" href="https://auivszkscfcpczrkecoc.supabase.co" crossorigin />
+    
+    <!-- Optimize resource loading priority -->
+    <link rel="preload" href="/src/main.tsx" as="script" crossorigin />
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@levamais" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:title" content="Leva+ | Solução de Fidelidade">
+  <meta name="twitter:title" content="Leva+ | Solução de Fidelidade">
+  <meta property="og:description" content="Sistema completo de fidelidade para redes de lojas. Gerencie pontos, cashback e recompensas de forma integrada.">
+  <meta name="twitter:description" content="Sistema completo de fidelidade para redes de lojas. Gerencie pontos, cashback e recompensas de forma integrada.">
+</head>
+
+  <body>
+    <div id="root">
+      <!-- Static loading content for instant FCP -->
+      <style>
+        .initial-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);z-index:9999}
+        .initial-loader-content{text-align:center;color:#fff}
+        .initial-loader-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,0.1);border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .initial-loader-text{font-size:18px;font-weight:600;margin-bottom:8px;font-family:system-ui,-apple-system,sans-serif}
+        .initial-loader-subtext{font-size:14px;opacity:0.7;font-family:system-ui,-apple-system,sans-serif}
+      </style>
+      <div class="initial-loader">
+        <div class="initial-loader-content">
+          <div class="initial-loader-spinner"></div>
+          <div class="initial-loader-text">Leva+</div>
+          <div class="initial-loader-subtext">Carregando...</div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
